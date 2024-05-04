@@ -333,7 +333,7 @@ class B2BCustomerOrderController extends Controller {
                             ->selectRaw("DATEDIFF(date_format(b2b_exp_date, '%Y-%m-%d'), CURRENT_DATE) as tf")
                             ->first();
                         // print_r($f);
-                        if ($f) {
+                        if ($f && $p['b2b_cust_query_product_id'] > 0) {
                         //     echo " block 2 ";
                             $eligible_products[] = $p['b2b_cust_query_product_id'];
                         }
@@ -342,10 +342,10 @@ class B2BCustomerOrderController extends Controller {
 
 
                 return response()->json(['ep' =>$eligible_products ]);
-                // return response()->json(['ep' =>$eligible_products, 'products' =>$request->products ]);
 
 
-                /*
+
+
 
             // if ($request->phone == "8801755554910" ) {
 
@@ -527,7 +527,7 @@ class B2BCustomerOrderController extends Controller {
 
             // }
 
-            */
+
 
         }
 
