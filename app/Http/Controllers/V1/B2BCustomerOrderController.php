@@ -343,6 +343,8 @@ class B2BCustomerOrderController extends Controller {
             // ========== expired item checking =====================
 
 
+
+            // ============== skiped expired item and order proceed ======================
             if (count($eligible_products) > 1 )
             {
 
@@ -476,17 +478,13 @@ class B2BCustomerOrderController extends Controller {
                 }
                 // ============= query notification ==============================
 
-                return response()->json([
-                    'success' => true ,
-                    'msg' => 'Order data saved'
-                ]);
+                return response()->json([ 'success' => true , 'msg' => 'Order data saved' ]);
 
             }  else {
-                return response()->json([
-                    'success' => true ,
-                    'msg' => 'Order canceled, due to selected expired item'
-                ]);
+                return response()->json([ 'success' => true ,'msg' => 'Order canceled, due to selected expired item']);
             }
+            // ============== skiped expired item and order proceed ======================
+
 
         }
     }
