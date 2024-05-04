@@ -339,13 +339,6 @@ class B2BCustomerOrderController extends Controller {
                         $eligible_products[] = $p['b2b_cust_query_product_id'];
                     }
                 }
-
-                foreach($request->products as $p) {
-                    if (in_array($p['b2b_cust_query_product_id'] ,  $eligible_products) ) {
-                         echo "yes support ==> ". $p['b2b_cust_query_product_id'];
-                    }
-                }
-
             }
             // ========== expired item checking =====================
             return response()->json([ 'success' => true , 'eligible_products' =>  $eligible_products ]);
