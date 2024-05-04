@@ -341,7 +341,7 @@ class B2BCustomerOrderController extends Controller {
                 }
 
 
-                return response()->json(['ep' =>$eligible_products, 'eligible_products' => count($eligible_products) ]);
+                return response()->json(['ep' =>$eligible_products, 'eligible_products' => count($eligible_products), 'no_of_products' => count($request->products) ]);
 
 
 
