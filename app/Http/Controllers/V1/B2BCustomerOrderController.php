@@ -336,12 +336,29 @@ class B2BCustomerOrderController extends Controller {
                         ->first();
 
                     if ($f && $f->tf > 0) {
-                        $eligible_products[] =  $f->tf;
+                        $eligible_products[] =  $p['b2b_cust_query_product_id'];
                     }
                 }
             }
             // ========== expired item checking =====================
             return response()->json([ 'success' => true , 'eligible_products' =>  $eligible_products ]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
             // ============== skiped expired item and order proceed ======================
