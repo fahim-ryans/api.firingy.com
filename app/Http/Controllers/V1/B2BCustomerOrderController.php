@@ -319,24 +319,23 @@ class B2BCustomerOrderController extends Controller {
             return response()->json(['error'=> 'Query id required', 'success'=> false  ], 401);
         }
 
+        else if ( empty($request->products) ) {
+            return response()->json(['error'=> 'Products id required', 'success'=> false  ], 401);
+        }
+
         else  {
 
             // ========== expired item checking =====================
             $eligible_products = [];
             if (isset($request->products)) {
-                // echo "block 1 ";
                 foreach($request->products as $p) {
-                    // echo $p['phone'] ."   ". $p['b2b_cust_query_product_id'] . "   ". $p['customer_query_id'];
                     $f = DB::table("b2b_customer_query_products")
                         ->where("b2b_cust_query_product_id", $p['b2b_cust_query_product_id'])
-                        // ->where("phone", $p['phone'])
                         ->where("customer_query_id", $p['customer_query_id'])
                         ->selectRaw("DATEDIFF(date_format(b2b_exp_date, '%Y-%m-%d'), CURRENT_DATE) as tf")
                         ->first();
-                    // print_r($f);
+
                     if ($f && $f->tf > 0) {
-                    //     echo " block 2 ";
-                        // $eligible_products[] = $p['b2b_cust_query_product_id'];
                         $eligible_products[] =  $f->tf;
                     }
                 }
@@ -344,7 +343,9 @@ class B2BCustomerOrderController extends Controller {
             // ========== expired item checking =====================
 
 
-            if (count($eligible_products) > 1 ) {
+            if (count($eligible_products) > 1 )
+            {
+
                 $query_id_list_string = $request->queries;
                 $query_id_list_array = explode(",", $query_id_list_string);
 
