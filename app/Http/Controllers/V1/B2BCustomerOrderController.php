@@ -339,6 +339,16 @@ class B2BCustomerOrderController extends Controller {
                         $eligible_products[] = $p['b2b_cust_query_product_id'];
                     }
                 }
+
+
+                foreach($request->products as $p) {
+
+                    if (in_array($p['b2b_cust_query_product_id'] ,  $eligible_products) ) {
+                         echo "yes support ==> ". $p['b2b_cust_query_product_id'];
+                    }
+                }
+
+
             }
             // ========== expired item checking =====================
             return response()->json([ 'success' => true , 'eligible_products' =>  $eligible_products ]);
@@ -386,16 +396,19 @@ class B2BCustomerOrderController extends Controller {
                 try {
                     if (isset($request->products)) {
                         foreach($request->products as $p) {
-                            DB::table("b2b_customer_query_products")
-                                ->where("phone", $p['phone'])
-                                ->where("b2b_cust_query_product_id", $p['b2b_cust_query_product_id'])
-                                ->where("customer_query_id", $p['customer_query_id'])
-                                ->update([
-                                    "order_id" => $ordID,
-                                    "order_qty" => $p['cartQty'],
-                                    "is_active" => "Done",
-                                    "order_date" => Carbon::now('GMT+6')
-                                ]);
+
+                            if (in_array($p['b2b_cust_query_product_id'] ,  $eligible_products) ) {
+                                DB::table("b2b_customer_query_products")
+                                            ->where("phone", $p['phone'])
+                                            ->where("b2b_cust_query_product_id", $p['b2b_cust_query_product_id'])
+                                            ->where("customer_query_id", $p['customer_query_id'])
+                                            ->update([
+                                                "order_id" => $ordID,
+                                                "order_qty" => $p['cartQty'],
+                                                "is_active" => "Done",
+                                                "order_date" => Carbon::now('GMT+6')
+                                            ]);
+                            }
                         }
                     }
                 }
