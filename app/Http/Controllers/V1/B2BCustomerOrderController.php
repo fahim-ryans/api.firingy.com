@@ -320,218 +320,173 @@ class B2BCustomerOrderController extends Controller {
         }
 
         else  {
-                $eligible_products = [];
-                if (isset($request->products)) {
-                    // echo "block 1 ";
-                    foreach($request->products as $p) {
-                        // echo $p['phone'] ."   ". $p['b2b_cust_query_product_id'] . "   ". $p['customer_query_id'];
-                        $f = DB::table("b2b_customer_query_products")
-                            ->where("b2b_cust_query_product_id", $p['b2b_cust_query_product_id'])
-                            // ->where("phone", $p['phone'])
-                            ->where("customer_query_id", $p['customer_query_id'])
-                            ->selectRaw("DATEDIFF(date_format(b2b_exp_date, '%Y-%m-%d'), CURRENT_DATE) as tf")
-                            ->first();
-                        // print_r($f);
-                        if ($f && $f->tf > 0) {
-                        //     echo " block 2 ";
-                            // $eligible_products[] = $p['b2b_cust_query_product_id'];
-                            $eligible_products[] =  $f->tf;
+
+            // ========== expired item checking =====================
+            $eligible_products = [];
+            if (isset($request->products)) {
+                // echo "block 1 ";
+                foreach($request->products as $p) {
+                    // echo $p['phone'] ."   ". $p['b2b_cust_query_product_id'] . "   ". $p['customer_query_id'];
+                    $f = DB::table("b2b_customer_query_products")
+                        ->where("b2b_cust_query_product_id", $p['b2b_cust_query_product_id'])
+                        // ->where("phone", $p['phone'])
+                        ->where("customer_query_id", $p['customer_query_id'])
+                        ->selectRaw("DATEDIFF(date_format(b2b_exp_date, '%Y-%m-%d'), CURRENT_DATE) as tf")
+                        ->first();
+                    // print_r($f);
+                    if ($f && $f->tf > 0) {
+                    //     echo " block 2 ";
+                        // $eligible_products[] = $p['b2b_cust_query_product_id'];
+                        $eligible_products[] =  $f->tf;
+                    }
+                }
+            }
+            // ========== expired item checking =====================
+
+
+            if (count($eligible_products) > 1 ) {
+                $query_id_list_string = $request->queries;
+                $query_id_list_array = explode(",", $query_id_list_string);
+
+                // for testing
+                // ===========
+                if (DB::table("b2b_orders")->orderBy("created_at", "desc")->count() > 0) {
+                    $lastOrderObj = DB::table("b2b_orders")->orderBy("created_at", "desc")->first();
+                    $lastOrder = substr($lastOrderObj->order_id, 2, 12);
+                } else {
+                    $lastOrder = DB::table("b2b_customer_query")->orderBy("created_at", "desc")->count()  ;
+                }
+
+                $ordID = 'BO' . ($lastOrder + 1) ;
+                $insert_data = [];
+                $total = 0;
+                $b2b_total = 0;
+
+                // =========== products ===============
+                try {
+                    if (isset($request->products)) {
+                        foreach($request->products as $p) {
+                            DB::table("b2b_customer_query_products")
+                                ->where("phone", $p['phone'])
+                                ->where("b2b_cust_query_product_id", $p['b2b_cust_query_product_id'])
+                                ->where("customer_query_id", $p['customer_query_id'])
+                                ->update([
+                                    "order_id" => $ordID,
+                                    "order_qty" => $p['cartQty'],
+                                    "is_active" => "Done",
+                                    "order_date" => Carbon::now('GMT+6')
+                                ]);
                         }
                     }
                 }
+                catch(\Exception $e) {
+                    Log::info("products ::: ". $e->getMessage() );
+                }
+                // =========== products ===============
 
 
-                return response()->json(['ep' =>$eligible_products, 'eligible_products' => count($eligible_products), 'no_of_products' => count($request->products) ]);
+                // =========== queries ================
+                try {
+                    foreach($query_id_list_array as $q) {
 
+                        $query = DB::table("b2b_customer_query")->where("b2b_cust_query_id", $q )
+                                    ->first();
 
+                        $productDetObj = DB::table("b2b_customer_query_products")
+                                    ->selectRaw("(b2b_req_price*order_qty) as b2b_subtotal,
+                                    (b2b_req_price*b2b_qty) as reg_subtotal")
+                                    ->where("customer_query_id", $q )
+                                    ->first();
 
-
-
-            // if ($request->phone == "8801755554910" ) {
-
-                $query_id_list_string = $request->queries;
-                // $query_id_list_array_data_list = explode(",", $query_id_list_string);
-                $query_id_list_array = explode(",", $query_id_list_string);
-
-
-                // try {
-                //     $valid_query_id_list = 0;
-                //     foreach($query_id_list_array as $qq) {
-                //         // query_id_list_array
-                //         $checkIsExpiredItems = DB::table("b2b_customer_query_products")
-                //                                 ->selectRaw("(DATEDIFF(date_format(b2b_exp_date, '%Y-%m-%d') , CURRENT_DATE) > 0) as is_expired")
-                //                                 ->whereIn("customer_query_id", $qq)
-                //                                 ->first();
-                //         if ($checkIsExpiredItems->is_expired > 0) {
-                //             // $query_id_list_array_new[] = $qq;
-                //             $valid_query_id_list = 1;
-                //         }
-                //     }
-                // } catch(\Exception $ee) {
-                //     $valid_query_id_list = 0;
-                //     Log::info('Customer-all-order-query_id_list_array-error >>> '. $ee->getMessage() );
-                // }
-
-
-                // SELECT DATEDIFF(date_format(b2b_exp_date, '%Y-%m-%d') , CURRENT_DATE) > 0
-                // FROM `b2b_customer_query_products` WHERE customer_query_id in (14176 )
-
-                // if ($valid_query_id_list > 0 ) {
-                    // for testing
-                    // ===========
-                    if (DB::table("b2b_orders")->orderBy("created_at", "desc")->count() > 0) {
-                        $lastOrderObj = DB::table("b2b_orders")->orderBy("created_at", "desc")->first();
-                        $lastOrder = substr($lastOrderObj->order_id, 2, 12);
-                    } else {
-                        $lastOrder = DB::table("b2b_customer_query")->orderBy("created_at", "desc")->count()  ;
-                    }
-
-                    $ordID = 'BO' . ($lastOrder + 1) ;
-
-                    $insert_data = [];
-                    $total = 0;
-                    $b2b_total = 0;
-
-                    // =========== products ===============
-                    try {
-                        if (isset($request->products)) {
-                            foreach($request->products as $p) {
-                                DB::table("b2b_customer_query_products")
-                                    ->where("phone", $p['phone'])
-                                    ->where("b2b_cust_query_product_id", $p['b2b_cust_query_product_id'])
-                                    ->where("customer_query_id", $p['customer_query_id'])
-                                    ->update([
-                                        "order_id" => $ordID,
-                                        "order_qty" => $p['cartQty'],
-                                        "is_active" => "Done",
-                                        "order_date" => Carbon::now('GMT+6')
-                                    ]);
-
-
-
-                            }
+                        if ($productDetObj) {
+                            $total += $productDetObj->reg_subtotal;
+                            $b2b_total += $productDetObj->b2b_subtotal;
+                        } else {
+                            $total += $query->total;
+                            $b2b_total += $query->b2b_total;
                         }
-                    }
-                    catch(\Exception $e) {
-                        Log::info("products ::: ". $e->getMessage() );
-                    }
-                    // =========== products ===============
+                        Log::info("productDetObj >>>> ".  json_encode($productDetObj));
 
-                    // =========== queries ================
-                    try {
-                        foreach($query_id_list_array as $q) {
-
-                            $query = DB::table("b2b_customer_query")->where("b2b_cust_query_id", $q )
-                                        ->first();
-
-                            $productDetObj = DB::table("b2b_customer_query_products")
-                                        ->selectRaw("(b2b_req_price*order_qty) as b2b_subtotal,
-                                        (b2b_req_price*b2b_qty) as reg_subtotal")
-                                        ->where("customer_query_id", $q )
-                                        ->first();
-
-                            if ($productDetObj) {
-                                $total += $productDetObj->reg_subtotal;
-                                $b2b_total += $productDetObj->b2b_subtotal;
-                            } else {
-                                $total += $query->total;
-                                $b2b_total += $query->b2b_total;
-                            }
-                            Log::info("productDetObj >>>> ".  json_encode($productDetObj));
-
-                            $insert_data[] = [
-                                "order_id" => $ordID,
-                                "query_id" => $q ,
-                                "query_status" => 'Done',
-                                "created_at" => Carbon::now('GMT+6'),
-                                "updated_at" => Carbon::now('GMT+6')
-                            ];
-
-                            DB::table("b2b_customer_query")
-                            ->where("b2b_cust_query_id", $q )
-                            ->update([
-                                'order_id' => $ordID,
-                                'total' => $total,
-                                "is_active" => "Done",
-                                "updated_at" =>  Carbon::now('GMT+6')
-                            ]);
-
-
-                            // DB::table("b2b_customer_query")
-                            // ->where("b2b_cust_query_id", $q )
-                            // ->update([
-                            //     "updated_at" => Carbon::now(),
-                            // ]);
-
-                        }
-
-                        DB::table("b2b_order_details")
-                                ->insert($insert_data);
-                    } catch(\Exception $e) {
-                        Log::info("Queries ::: ". $e->getMessage() );
-                    }
-                    // =========== queries ================
-
-                    // =========== users =================
-                    try {
-                        $u = DB::table("b2b_users")
-                                ->where("phone", $request->phone)
-                                ->first();
-
-
-
-                        $insert_data_obj = [
-                            "phone" => $request->phone,
+                        $insert_data[] = [
                             "order_id" => $ordID,
-                            "order_total" => $total,
-                            "b2b_total" => $b2b_total,
-                            "query_status" => "",
-                            "order_status" => 'Done',
-                            "platform" => 'app',
-                            "location_id" => $u->location_id,
+                            "query_id" => $q ,
+                            "query_status" => 'Done',
                             "created_at" => Carbon::now('GMT+6'),
                             "updated_at" => Carbon::now('GMT+6')
                         ];
 
-                        DB::table("b2b_orders")
-                            ->insert($insert_data_obj);
+                        DB::table("b2b_customer_query")
+                        ->where("b2b_cust_query_id", $q )
+                        ->update([
+                            'order_id' => $ordID,
+                            'total' => $total,
+                            "is_active" => "Done",
+                            "updated_at" =>  Carbon::now('GMT+6')
+                        ]);
                     }
-                    catch(\Exception $e) {
-                        Log::info("users ::: ". $e->getMessage() );
-                    }
-                    // =========== users =================
 
-                    //============= query notification ==============================
-                    try {
-                        $template = "query";
-                        $body_text = "B2B App New Order: ". $ordID ." has been received. Please review the request.";
-                        Log::info($body_text);
-                        $subject = "B2B App Query#". $ordID ." received";
-                        Common::sendMail(Common::notificationHolderEmail() , null, $body_text,  $subject, Common::notificationHolderName(), $template );
-                    } catch(\Exception $e) {
-                        Log::info("Query-Error:: ". $e->getMessage());
-                    }
-                    // ============= query notification ==============================
-
-                    return response()->json([
-                        'success' => true ,
-                        'msg' => 'Order data saved'
-                    ]);
-                // }
-                // else {
-                //     return response()->json([
-                //         'success' => true ,
-                //         'msg' => 'Order canceled'
-                //     ]);
-                // }
-
-            // }
+                    DB::table("b2b_order_details")
+                            ->insert($insert_data);
+                } catch(\Exception $e) {
+                    Log::info("Queries ::: ". $e->getMessage() );
+                }
+                // =========== queries ================
 
 
+                // =========== users =================
+                try {
+                    $u = DB::table("b2b_users")
+                            ->where("phone", $request->phone)
+                            ->first();
+
+
+
+                    $insert_data_obj = [
+                        "phone" => $request->phone,
+                        "order_id" => $ordID,
+                        "order_total" => $total,
+                        "b2b_total" => $b2b_total,
+                        "query_status" => "",
+                        "order_status" => 'Done',
+                        "platform" => 'app',
+                        "location_id" => $u->location_id,
+                        "created_at" => Carbon::now('GMT+6'),
+                        "updated_at" => Carbon::now('GMT+6')
+                    ];
+
+                    DB::table("b2b_orders")
+                        ->insert($insert_data_obj);
+                }
+                catch(\Exception $e) {
+                    Log::info("users ::: ". $e->getMessage() );
+                }
+                // =========== users =================
+
+
+                //============= query notification ==============================
+                try {
+                    $template = "query";
+                    $body_text = "B2B App New Order: ". $ordID ." has been received. Please review the request.";
+                    Log::info($body_text);
+                    $subject = "B2B App Query#". $ordID ." received";
+                    Common::sendMail(Common::notificationHolderEmail() , null, $body_text,  $subject, Common::notificationHolderName(), $template );
+                } catch(\Exception $e) {
+                    Log::info("Query-Error:: ". $e->getMessage());
+                }
+                // ============= query notification ==============================
+
+                return response()->json([
+                    'success' => true ,
+                    'msg' => 'Order data saved'
+                ]);
+
+            }  else {
+                return response()->json([
+                    'success' => true ,
+                    'msg' => 'Order canceled, due to selected expired item'
+                ]);
+            }
 
         }
-
     }
-
-
 }
