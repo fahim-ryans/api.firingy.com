@@ -333,10 +333,10 @@ class B2BCustomerOrderController extends Controller {
                     $f = DB::table("b2b_customer_query_products")
                         ->where("b2b_cust_query_product_id", $p['b2b_cust_query_product_id'])
                         ->where("customer_query_id", $p['customer_query_id'])
-                        ->selectRaw("DATEDIFF(date_format(b2b_exp_date, '%Y-%m-%d'), CURRENT_DATE) as tf")
+                        ->selectRaw("DATEDIFF(date_format(b2b_exp_date, '%Y-%m-%d'), CURRENT_DATE) as tdf")
                         ->first();
                     // print_r($f);
-                    if ($f && $f->tf >= 0) {
+                    if ($f && $f->tdf >= 0) {
                         $eligible_products[] = $p['b2b_cust_query_product_id'];
                         $eligible_queries[] = $p['customer_query_id'];
                     }
