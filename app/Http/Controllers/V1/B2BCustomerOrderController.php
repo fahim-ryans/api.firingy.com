@@ -320,6 +320,29 @@ class B2BCustomerOrderController extends Controller {
         }
 
         else  {
+                $eligible_products = [];
+
+                if (isset($request->products)) {
+
+                    foreach($request->products as $p) {
+                        $f = DB::table("b2b_customer_query_products")
+                            ->where("phone", $p['phone'])
+                            ->where("b2b_cust_query_product_id", $p['b2b_cust_query_product_id'])
+                            ->where("customer_query_id", $p['customer_query_id'])
+                            ->selectRaw("DATEDIFF(date_format(b2b_exp_date, '%Y-%m-%d'), CURRENT_DATE) as tf")
+                            ->first();
+                        if ($f && $f->tf) {
+                            $eligible_products[] = $p['b2b_cust_query_product_id'];
+                        }
+                    }
+                }
+
+
+
+                return response()->json($eligible_products);
+
+
+                /*
 
             // if ($request->phone == "8801755554910" ) {
 
@@ -500,6 +523,8 @@ class B2BCustomerOrderController extends Controller {
                 // }
 
             // }
+
+            */
 
         }
 
