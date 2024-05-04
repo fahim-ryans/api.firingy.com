@@ -342,7 +342,6 @@ class B2BCustomerOrderController extends Controller {
 
 
                 foreach($request->products as $p) {
-
                     if (in_array($p['b2b_cust_query_product_id'] ,  $eligible_products) ) {
                          echo "yes support ==> ". $p['b2b_cust_query_product_id'];
                     }
