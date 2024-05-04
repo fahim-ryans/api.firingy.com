@@ -406,14 +406,15 @@ class B2BCustomerOrderController extends Controller {
                         $query = DB::table("b2b_customer_query")->where("b2b_cust_query_id", $q )
                                     ->first();
 
-                        $productDetObj = DB::table("b2b_customer_query_products")
-                                    ->selectRaw("(b2b_req_price*order_qty) as b2b_subtotal,
-                                    (b2b_req_price*b2b_qty) as reg_subtotal")
-                                    ->where("customer_query_id", $q )
-                                    ->first();
 
                         if (in_array( $q  ,  $eligible_queries) )
                         {
+                            $productDetObj = DB::table("b2b_customer_query_products")
+                            ->selectRaw("(b2b_req_price*order_qty) as b2b_subtotal,
+                            (b2b_req_price*b2b_qty) as reg_subtotal")
+                            ->where("customer_query_id", $q )
+                            ->first();
+
                             if ($productDetObj) {
                                 $total += $productDetObj->reg_subtotal;
                                 $b2b_total += $productDetObj->b2b_subtotal;
