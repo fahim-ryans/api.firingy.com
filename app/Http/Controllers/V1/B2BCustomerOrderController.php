@@ -327,7 +327,6 @@ class B2BCustomerOrderController extends Controller {
                     foreach($request->products as $p) {
                         echo $p['phone'] ."   ". $p['b2b_cust_query_product_id'] . "   ". $p['customer_query_id'];
                         $f = DB::table("b2b_customer_query_products")
-
                             ->where("b2b_cust_query_product_id", $p['b2b_cust_query_product_id'])
                             // ->where("phone", $p['phone'])
                             ->where("customer_query_id", $p['customer_query_id'])
