@@ -335,7 +335,8 @@ class B2BCustomerOrderController extends Controller {
                         // print_r($f);
                         if ($f && $p['b2b_cust_query_product_id'] > 0) {
                         //     echo " block 2 ";
-                            $eligible_products[] = $p['b2b_cust_query_product_id'];
+                            // $eligible_products[] = $p['b2b_cust_query_product_id'];
+                            $eligible_products[] =  $f->tf;
                         }
                     }
                 }
