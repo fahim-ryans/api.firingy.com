@@ -325,14 +325,14 @@ class B2BCustomerOrderController extends Controller {
                 if (isset($request->products)) {
                     echo "block 1 ";
                     foreach($request->products as $p) {
-                         echo $p['phone'] ."   ". $p['b2b_cust_query_product_id'] . "   ". $p['customer_query_id'];
+                        echo $p['phone'] ."   ". $p['b2b_cust_query_product_id'] . "   ". $p['customer_query_id'];
                         $f = DB::table("b2b_customer_query_products")
                             ->where("phone", $p['phone'])
                             ->where("b2b_cust_query_product_id", $p['b2b_cust_query_product_id'])
                             ->where("customer_query_id", $p['customer_query_id'])
                             // ->selectRaw("DATEDIFF(date_format(b2b_exp_date, '%Y-%m-%d'), CURRENT_DATE) as tf")
                             ->first();
-                            print_r($f);
+                        print_r($f);
                         // if ($f) {
                         //     echo " block 2 ";
                         //     $eligible_products[] = $p['b2b_cust_query_product_id'];
@@ -341,8 +341,8 @@ class B2BCustomerOrderController extends Controller {
                 }
 
 
-
-                return response()->json(['ep' =>$eligible_products, 'products' =>$request->products ]);
+                return response()->json(['ep' =>$eligible_products ]);
+                // return response()->json(['ep' =>$eligible_products, 'products' =>$request->products ]);
 
 
                 /*
