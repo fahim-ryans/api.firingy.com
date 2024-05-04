@@ -321,7 +321,6 @@ class B2BCustomerOrderController extends Controller {
 
         else  {
                 $eligible_products = [];
-
                 if (isset($request->products)) {
                     // echo "block 1 ";
                     foreach($request->products as $p) {
@@ -342,7 +341,7 @@ class B2BCustomerOrderController extends Controller {
                 }
 
 
-                return response()->json(['ep' =>$eligible_products ]);
+                return response()->json(['ep' =>$eligible_products, 'eligible_products' => count($eligible_products) ]);
 
 
 
