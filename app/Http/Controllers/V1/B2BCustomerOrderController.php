@@ -331,7 +331,7 @@ class B2BCustomerOrderController extends Controller {
                             ->where("b2b_cust_query_product_id", $p['b2b_cust_query_product_id'])
                             // ->where("phone", $p['phone'])
                             ->where("customer_query_id", $p['customer_query_id'])
-                            // ->selectRaw("DATEDIFF(date_format(b2b_exp_date, '%Y-%m-%d'), CURRENT_DATE) as tf")
+                            ->selectRaw("DATEDIFF(date_format(b2b_exp_date, '%Y-%m-%d'), CURRENT_DATE) as tf")
                             ->first();
                         print_r($f);
                         // if ($f) {
