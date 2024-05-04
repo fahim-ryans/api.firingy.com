@@ -327,6 +327,7 @@ class B2BCustomerOrderController extends Controller {
 
             // ========== expired item checking =====================
             $eligible_products = [];
+            $eligible_queries = [];
             if (isset($request->products)) {
                 foreach($request->products as $p) {
                     $f = DB::table("b2b_customer_query_products")
@@ -337,6 +338,7 @@ class B2BCustomerOrderController extends Controller {
                     // print_r($f);
                     if ($f && $f->tf >= 0) {
                         $eligible_products[] = $p['b2b_cust_query_product_id'];
+                        $eligible_queries[] = $p['customer_query_id'];
                     }
                 }
             }
@@ -407,7 +409,7 @@ class B2BCustomerOrderController extends Controller {
                                     ->where("customer_query_id", $q )
                                     ->first();
 
-                        if (in_array($productDetObj->b2b_cust_query_product_id ,  $eligible_products) )
+                        if (in_array( $q  ,  $eligible_queries) )
                         {
                             if ($productDetObj) {
                                 $total += $productDetObj->reg_subtotal;
