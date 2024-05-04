@@ -407,31 +407,35 @@ class B2BCustomerOrderController extends Controller {
                                     ->where("customer_query_id", $q )
                                     ->first();
 
-                        if ($productDetObj) {
-                            $total += $productDetObj->reg_subtotal;
-                            $b2b_total += $productDetObj->b2b_subtotal;
-                        } else {
-                            $total += $query->total;
-                            $b2b_total += $query->b2b_total;
+                        if (in_array($productDetObj->b2b_cust_query_product_id ,  $eligible_products) )
+                        {
+                            if ($productDetObj) {
+                                $total += $productDetObj->reg_subtotal;
+                                $b2b_total += $productDetObj->b2b_subtotal;
+                            } else {
+                                $total += $query->total;
+                                $b2b_total += $query->b2b_total;
+                            }
+                            Log::info("productDetObj >>>> ".  json_encode($productDetObj));
+
+                            $insert_data[] = [
+                                "order_id" => $ordID,
+                                "query_id" => $q ,
+                                "query_status" => 'Done',
+                                "created_at" => Carbon::now('GMT+6'),
+                                "updated_at" => Carbon::now('GMT+6')
+                            ];
+
+                            DB::table("b2b_customer_query")
+                            ->where("b2b_cust_query_id", $q )
+                            ->update([
+                                'order_id' => $ordID,
+                                'total' => $total,
+                                "is_active" => "Done",
+                                "updated_at" =>  Carbon::now('GMT+6')
+                            ]);
                         }
-                        Log::info("productDetObj >>>> ".  json_encode($productDetObj));
 
-                        $insert_data[] = [
-                            "order_id" => $ordID,
-                            "query_id" => $q ,
-                            "query_status" => 'Done',
-                            "created_at" => Carbon::now('GMT+6'),
-                            "updated_at" => Carbon::now('GMT+6')
-                        ];
-
-                        DB::table("b2b_customer_query")
-                        ->where("b2b_cust_query_id", $q )
-                        ->update([
-                            'order_id' => $ordID,
-                            'total' => $total,
-                            "is_active" => "Done",
-                            "updated_at" =>  Carbon::now('GMT+6')
-                        ]);
                     }
 
                     DB::table("b2b_order_details")
