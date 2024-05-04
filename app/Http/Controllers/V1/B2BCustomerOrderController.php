@@ -341,7 +341,7 @@ class B2BCustomerOrderController extends Controller {
                 }
             }
             // ========== expired item checking =====================
-            return response()->json([ 'success' => true , 'eligible_products' =>  $eligible_products ]);
+            // return response()->json([ 'success' => true , 'eligible_products' =>  $eligible_products ]);
 
 
 
@@ -387,6 +387,7 @@ class B2BCustomerOrderController extends Controller {
                     }
                 }
                 catch(\Exception $e) {
+                    echo $e->getMessage();
                     Log::info("products ::: ". $e->getMessage() );
                 }
                 // =========== products ===============
@@ -435,6 +436,7 @@ class B2BCustomerOrderController extends Controller {
                     DB::table("b2b_order_details")
                             ->insert($insert_data);
                 } catch(\Exception $e) {
+                    echo $e->getMessage();
                     Log::info("Queries ::: ". $e->getMessage() );
                 }
                 // =========== queries ================
@@ -465,6 +467,7 @@ class B2BCustomerOrderController extends Controller {
                         ->insert($insert_data_obj);
                 }
                 catch(\Exception $e) {
+                    echo $e->getMessage();
                     Log::info("users ::: ". $e->getMessage() );
                 }
                 // =========== users =================
@@ -478,6 +481,7 @@ class B2BCustomerOrderController extends Controller {
                     $subject = "B2B App Query#". $ordID ." received";
                     Common::sendMail(Common::notificationHolderEmail() , null, $body_text,  $subject, Common::notificationHolderName(), $template );
                 } catch(\Exception $e) {
+                    echo $e->getMessage();
                     Log::info("Query-Error:: ". $e->getMessage());
                 }
                 // ============= query notification ==============================
