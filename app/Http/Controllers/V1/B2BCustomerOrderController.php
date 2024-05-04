@@ -339,7 +339,7 @@ class B2BCustomerOrderController extends Controller {
 
 
 
-                return response()->json($eligible_products);
+                return response()->json(['ep' =>$eligible_products, 'products' =>$request->products ]);
 
 
                 /*
