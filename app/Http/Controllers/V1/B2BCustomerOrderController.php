@@ -325,6 +325,7 @@ class B2BCustomerOrderController extends Controller {
                 if (isset($request->products)) {
                     echo "block 1";
                     foreach($request->products as $p) {
+                        echo $p['b2b_cust_query_product_id'] ;
                         $f = DB::table("b2b_customer_query_products")
                             ->where("phone", $p['phone'])
                             ->where("b2b_cust_query_product_id", $p['b2b_cust_query_product_id'])
