@@ -341,7 +341,7 @@ class B2BCustomerOrderController extends Controller {
                 }
             }
             // ========== expired item checking =====================
-
+            return response()->json([ 'success' => true , 'eligible_products' =>  $eligible_products ]);
 
 
             // ============== skiped expired item and order proceed ======================
