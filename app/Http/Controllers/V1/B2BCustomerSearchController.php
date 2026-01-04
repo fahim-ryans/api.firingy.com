@@ -88,6 +88,15 @@ class B2BCustomerSearchController extends Controller {
                                  ->pluck("product_code_inv");
                  }
 
+                 else if ($keyword == "printer"  ) {
+                      $allProducts = DB::table("products")
+                                 ->where("product_name", "like", "%".  $keyword ."%")
+                                 ->orWhere("product_name",    "%printer%"  )
+                                 ->where('product_price2', '>', 0)
+                                 ->where("product_is_exist", "1")
+                                 ->pluck("product_code_inv");
+                 }
+
                  else if ( in_array($keyword, $search_list) ) {
 
                       $allProducts = DB::table("products")
