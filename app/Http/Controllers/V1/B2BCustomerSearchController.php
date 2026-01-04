@@ -169,8 +169,6 @@ class B2BCustomerSearchController extends Controller {
                                   ->whereIn("products.product_code_inv", $allProducts)
                                  ->paginate(15);
 
-
-
              if(count($products) > 0 ) {
 
                  $dataList = [];
